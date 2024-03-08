@@ -11247,8 +11247,8 @@ var BaseMeasure = /*#__PURE__*/function () {
   function BaseMeasure(viewer, opt) {
     _classCallCheck(this, BaseMeasure);
 
-    opt = opt || {};
     this.viewer = viewer;
+    this.opt = opt || {};
     /**
      * @property {String} objId 唯一标识id
      */

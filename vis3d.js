@@ -1409,7 +1409,7 @@ var Prompt$1 = /*#__PURE__*/function () {
 
     this.mapDomRect = this.opt.client ? mapDom.getBoundingClientRect() : {
       top: 0,
-      offset: 0
+      left: 0
     };
     mapDom.appendChild(this.promptDiv);
     var clsBtn = window.document.getElementById("prompt-close-".concat(this.opt.id));

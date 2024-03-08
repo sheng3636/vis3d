@@ -1363,7 +1363,9 @@ var Prompt$1 = /*#__PURE__*/function () {
       style: {
         background: "rgba(0,0,0,0.5)",
         color: "white"
-      }
+      },
+      client: false // 是否需要自动计算偏移量
+
     };
     this.opt = Object.assign(defaultOpt, opt);
     /**
@@ -1401,9 +1403,14 @@ var Prompt$1 = /*#__PURE__*/function () {
     this.promptDiv.className = "vis3d-prompt ".concat(this.opt.className);
     this.promptDiv.id = promptId;
     this.promptDiv.innerHTML = promptConenet;
-    var mapDom = window.document.getElementById(mapid); // 计算地图对象位置
+    var mapDom = window.document.getElementById(mapid); // 计算地图对象位置 
+    // 1、如果是被别人挤下来的 则要加上这个值  
+    // 2、如果是自己和父级设置的定位 则不需要加
 
-    this.mapDomRect = mapDom.getBoundingClientRect();
+    this.mapDomRect = this.opt.client ? mapDom.getBoundingClientRect() : {
+      top: 0,
+      offset: 0
+    };
     mapDom.appendChild(this.promptDiv);
     var clsBtn = window.document.getElementById("prompt-close-".concat(this.opt.id));
     var that = this; // 绑定弹窗关闭事件
@@ -1726,7 +1733,7 @@ var BasePlot = /*#__PURE__*/function () {
      * @property {Object} promptStyle 鼠标提示框样式
      */
 
-    this.promptStyle = this.style.prompt || {
+    this.promptStyle = this.opt.prompt || {
       show: true
     };
     this.properties = {}; // 缩放分辨率比例
@@ -21118,6 +21125,8 @@ var RightTool = /*#__PURE__*/function () {
       });
       this.toolMenu.appendChild(dom);
       document.getElementById(customId).addEventListener('click', function () {
+        var tool = document.getElementsByClassName('vis3d-right-tool');
+        if (tool[0]) tool[0].style.display = "none";
         if (opt.click) opt.click();
       });
     }
@@ -22035,6 +22044,7 @@ var viewPoint = {
   center: null,
   startTime: null,
   viewer: undefined,
+  angle: 5,
   start: function start(viewer, opt) {
     this.viewer = viewer || window.viewer;
 
@@ -22051,7 +22061,7 @@ var viewPoint = {
         range = _ref.range,
         pitch = _ref.pitch;
 
-    angle = speed || 5;
+    this.angle = speed || 5;
     range = range || 5000;
     pitch = pitch || -60;
     this.viewer.clock.shouldAnimate = true; //自动播放

@@ -2831,12 +2831,6 @@ var CreateGltfModel = /*#__PURE__*/function (_BasePlot) {
     _this.opt = opt || {};
     _this.type = "gltfModel";
     _this.viewer = viewer;
-
-    if (!style.uri) {
-      console.warn("请输入模型地址！");
-      return _possibleConstructorReturn(_this);
-    }
-
     var defaultStyle = {
       heading: 0,
       pitch: 0,
@@ -2844,12 +2838,18 @@ var CreateGltfModel = /*#__PURE__*/function (_BasePlot) {
       minimumPixelSize: 24,
       maximumScale: 120
     };
-    _this.style = Object.assign(defaultStyle, style || {});
+    _this.style = Object.assign(defaultStyle, _this.opt.style || {});
+
+    if (!_this.style.uri) {
+      console.warn("请输入模型地址！");
+      return _possibleConstructorReturn(_this);
+    }
     /**
      * @property {String} modelUri 模型地址
      */
 
-    _this.modelUri = style.uri;
+
+    _this.modelUri = _this.style.uri;
     _this.entity = null;
     return _this;
   }
@@ -2962,8 +2962,8 @@ var CreateGltfModel = /*#__PURE__*/function (_BasePlot) {
       }
     }
     /**
-    * 当前步骤结束
-    */
+     * 当前步骤结束
+     */
 
   }, {
     key: "done",
@@ -4511,7 +4511,7 @@ Cesium.Material._materialCache.addMaterial('WallMaterial', {
                           else\n\
                           {\n\
                               material.alpha = colorImage.a * color.a;\n\
-                              material.diffuse = max(color.rgb * material.a * 3.0, color.rgb); \n\
+                              material.diffuse = max(color.rgb * material.alpha * 3.0, color.rgb); \n\
                           }\n\
                           // material.emission = colorImage.rgb;\n\
                           return material;\n\
@@ -11473,7 +11473,7 @@ var BaseMeasure = /*#__PURE__*/function () {
         cartographicArray.push(ellipsoid.cartesianToCartographic(cartesian));
       }
 
-      Cesium.when(Cesium.sampleTerrainMostDetailed(that.viewer.terrainProvider, cartographicArray), function (updateLnglats) {
+      Cesium.sampleTerrainMostDetailed(that.viewer.terrainProvider, cartographicArray).then(function (updateLnglats) {
         var allLength = 0;
         var offset = 10.0;
 
@@ -11511,7 +11511,7 @@ var BaseMeasure = /*#__PURE__*/function () {
       var newCtg1 = Cesium.Cartographic.fromDegrees(lng, lat + random);
       var newCtg2 = Cesium.Cartographic.fromDegrees(lng + random, lat);
       var that = this;
-      Cesium.when(Cesium.sampleTerrainMostDetailed(this.viewer.terrainProvider, [newCtg1, newCtg2]), function (updateLnglats) {
+      Cesium.sampleTerrainMostDetailed(this.viewer.terrainProvider, [newCtg1, newCtg2]).then(function (updateLnglats) {
         for (var i = 0; i < updateLnglats.length; i++) {
           var item = updateLnglats[i];
           item.height = item.height ? item.height : height;
@@ -13824,7 +13824,7 @@ var MeasureSection = /*#__PURE__*/function (_BaseMeasure) {
       if (!ctgs || ctgs.length < 1) return;
       var first = Cesium.Cartographic.fromCartesian(positions[0]);
       var height = first.height;
-      Cesium.when(Cesium.sampleTerrainMostDetailed(this.viewer.terrainProvider, ctgs), function (updateLnglats) {
+      Cesium.sampleTerrainMostDetailed(this.viewer.terrainProvider, ctgs).then(function (updateLnglats) {
         for (var i = 0; i < updateLnglats.length; i++) {
           var item = updateLnglats[i];
           item.height = item.height ? item.height : height;
@@ -15514,7 +15514,7 @@ var RoamTool = /*#__PURE__*/function () {
       }
 
       var that = this;
-      Cesium.when(Cesium.sampleTerrainMostDetailed(this.viewer.terrainProvider, cgArr), function (updateLnglats) {
+      Cesium.sampleTerrainMostDetailed(this.viewer.terrainProvider, cgArr).then(function (updateLnglats) {
         var raisedPositions = that.viewer.scene.globe.ellipsoid.cartographicArrayToCartesianArray(updateLnglats); //转为世界坐标数组
 
         if (callback) callback(raisedPositions);
@@ -28946,7 +28946,7 @@ var MapViewer = /*#__PURE__*/function () {
   }, {
     key: "loadTerrain",
     value: function () {
-      var _loadTerrain = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(url, visible) {
+      var _loadTerrain = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(url) {
         var terrainProvider;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) {
@@ -28962,16 +28962,14 @@ var MapViewer = /*#__PURE__*/function () {
               case 2:
                 // 移除原地形
                 this._viewer.scene.terrainProvider = new Cesium.EllipsoidTerrainProvider({});
-                visible = visible == undefined ? true : visible;
-                _context.next = 6;
+                _context.next = 5;
                 return Cesium.CesiumTerrainProvider.fromUrl(url);
 
-              case 6:
+              case 5:
                 terrainProvider = _context.sent;
                 this._viewer.scene.terrainProvider = terrainProvider;
-                this.setTerrainVisible(visible);
 
-              case 9:
+              case 7:
               case "end":
                 return _context.stop();
             }
@@ -28979,7 +28977,7 @@ var MapViewer = /*#__PURE__*/function () {
         }, _callee, this);
       }));
 
-      function loadTerrain(_x, _x2) {
+      function loadTerrain(_x) {
         return _loadTerrain.apply(this, arguments);
       }
 
@@ -28994,6 +28992,8 @@ var MapViewer = /*#__PURE__*/function () {
     key: "setTerrainVisible",
     value: function () {
       var _setTerrainVisible = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(visible) {
+        var _this$opt$map$terrain;
+
         return _regeneratorRuntime().wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
@@ -29012,7 +29012,7 @@ var MapViewer = /*#__PURE__*/function () {
                 break;
 
               case 6:
-                this.loadTerrain(this.terrainUrl);
+                this.loadTerrain((_this$opt$map$terrain = this.opt.map.terrain) === null || _this$opt$map$terrain === void 0 ? void 0 : _this$opt$map$terrain.url);
 
               case 7:
                 this._viewer.scene.render();
@@ -29025,7 +29025,7 @@ var MapViewer = /*#__PURE__*/function () {
         }, _callee2, this);
       }));
 
-      function setTerrainVisible(_x3) {
+      function setTerrainVisible(_x2) {
         return _setTerrainVisible.apply(this, arguments);
       }
 

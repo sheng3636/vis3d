@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "vis3d": "^1.1.9"
+    "vis3d": "^1.1.9",
+    "vue-cesium": "^3.2.7"
   }
 }
